@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#143329"/>
+      <stop offset="100%" stop-color="#091712"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EBD197"/>
+      <stop offset="50%" stop-color="#C9A24D"/>
+      <stop offset="100%" stop-color="#9A7426"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="176" fill="none" stroke="url(#gold)" stroke-width="10" opacity="0.85"/>
+  <circle cx="256" cy="256" r="144" fill="none" stroke="#C9A24D" stroke-width="2.5" stroke-dasharray="8 8" opacity="0.55"/>
+  <!-- Compass Rose Star -->
+  <polygon points="256,64 286,226 256,256 226,226" fill="#EBD197"/>
+  <polygon points="256,448 286,286 256,256 226,286" fill="#9A7426"/>
+  <polygon points="448,256 286,286 256,256 286,226" fill="#C9A24D"/>
+  <polygon points="64,256 226,286 256,256 226,226" fill="#B68D38"/>
+  <!-- Minor points -->
+  <polygon points="370,142 274,256 256,238" fill="#C9A24D" opacity="0.8"/>
+  <polygon points="142,370 256,274 238,256" fill="#9A7426" opacity="0.8"/>
+  <polygon points="370,370 256,274 274,256" fill="#C9A24D" opacity="0.8"/>
+  <polygon points="142,142 238,256 256,238" fill="#EBD197" opacity="0.8"/>
+  <circle cx="256" cy="256" r="22" fill="#0F241D" stroke="#EBD197" stroke-width="6"/>
+  <circle cx="256" cy="256" r="7" fill="#EBD197"/>
+</svg>

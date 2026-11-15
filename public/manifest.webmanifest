@@ -1,0 +1,31 @@
+{
+  "name": "Meridian · Curated City & Cultural Companion",
+  "short_name": "Meridian",
+  "description": "Move effortlessly through any destination with room-by-room museum audiobook tours, internet-featured restaurant dish guides, interactive maps, and TripAdvisor links.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#FAF7F2",
+  "theme_color": "#0F241D",
+  "categories": ["travel", "navigation", "lifestyle", "education"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
