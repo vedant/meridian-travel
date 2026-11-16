@@ -141,12 +141,56 @@ Rules:
     "tripadvisorUrl": null,
     "michelinUrl": null,
     "officialUrl": null,
-    "museumTour": null,
-    "diningGuide": null,
-    "shoppingGuide": null
+    "museumTour": {
+      "tourTitle": "Curated Highlights Audio Tour",
+      "routeStrategy": "Floor/room sequence",
+      "introTranscript": "70-90 word spoken introduction",
+      "highlights": [
+        {
+          "id": "slug",
+          "order": 1,
+          "title": "Artwork or Room Highlight",
+          "artistOrOrigin": "Artist / Period",
+          "location": "Exact Floor / Wing / Gallery",
+          "durationMinutes": 12,
+          "wikiImageQuery": "Wikipedia search query",
+          "summary": "Why it matters",
+          "lookClosely": "Visual detail to spot",
+          "audioScript": "85-110 word spoken audiobook script"
+        }
+      ]
+    },
+    "diningGuide": {
+      "cuisine": "Cuisine style",
+      "priceRange": "£££",
+      "accolades": ["Michelin / TripAdvisor accolades from search"],
+      "vibe": "Atmosphere description",
+      "featuredDishes": [
+        {
+          "name": "Exact Dish Name",
+          "badge": "Signature / Internet Favorite / Michelin Pick",
+          "description": "Why critics & reviewers rave about this dish",
+          "dietary": "Meat / Seafood / Vegetarian / Dessert"
+        }
+      ]
+    },
+    "shoppingGuide": {
+      "priceTier": "££££",
+      "bestFor": "What to shop for here",
+      "walkFromHotel": "Transit or walk note",
+      "highlights": [
+        {
+          "storeName": "Boutique or Department",
+          "category": "Specialty",
+          "mustSee": "Standout items",
+          "locationNote": "Floor or street corner"
+        }
+      ]
+    }
   },
   "insertIndex": null
-}`;
+}
+(Set museumTour, diningGuide, or shoppingGuide to null when not applicable to the stop's category — NEVER leave diningGuide null for a restaurant/café/market, and NEVER leave museumTour null for a museum/gallery/landmark!)`;
 
       const existingSummary = (dayContext?.stops || [])
         .map((s, i) => `${i}: [${s.time}] ${s.title}`)
@@ -260,10 +304,62 @@ Return ONLY valid JSON:
       "bookingStatus": "updated or original status",
       "titleOverride": null,
       "summaryOverride": null,
-      "newStop": null
+      "newStop": {
+        "id": "slug",
+        "time": "e.g. 1:30–3:00 p.m.",
+        "title": "Venue Name",
+        "subtitle": "Subtitle",
+        "category": "museum | dining | shopping | historic | performance | scenic | hotel | transit",
+        "bookingStatus": "included",
+        "neighborhood": "Neighborhood",
+        "address": "Verified street address",
+        "coordinates": { "lat": 0.0, "lng": 0.0 },
+        "walkOrTransit": "Transit + opening hours note",
+        "wikiImageQuery": "Wikipedia photo query",
+        "summary": "2-3 sentence grounded overview",
+        "insiderTips": ["Tip 1", "Tip 2"],
+        "tripadvisorUrl": null,
+        "michelinUrl": null,
+        "officialUrl": null,
+        "museumTour": {
+          "tourTitle": "Highlights Audio Tour",
+          "routeStrategy": "Route",
+          "introTranscript": "70-90 word intro",
+          "highlights": [
+            {
+              "id": "h1",
+              "order": 1,
+              "title": "Highlight",
+              "artistOrOrigin": "Period",
+              "location": "Floor / Room",
+              "durationMinutes": 12,
+              "wikiImageQuery": "Query",
+              "summary": "Summary",
+              "lookClosely": "Detail",
+              "audioScript": "85-110 word spoken script"
+            }
+          ]
+        },
+        "diningGuide": {
+          "cuisine": "Cuisine",
+          "priceRange": "£££",
+          "accolades": ["Accolades"],
+          "vibe": "Vibe",
+          "featuredDishes": [
+            {
+              "name": "Dish Name",
+              "badge": "Internet Favorite",
+              "description": "Why diners rave about it",
+              "dietary": "Category"
+            }
+          ]
+        },
+        "shoppingGuide": null
+      }
     }
   ]
-}`;
+}
+(For kept stops, set "newStop": null. For new stops, set museumTour, diningGuide, or shoppingGuide to null when not applicable to that stop's category.)`;
 
       const { data, modelUsed } = await callHydrogenJson({
         systemInstruction,
