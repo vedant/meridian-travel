@@ -108,7 +108,7 @@ export default function OnTheFlyEditorModal({
       if (!resp.ok || !data?.stop) {
         throw new Error(data?.error || 'Could not enrich stop.');
       }
-      onInsertStop(data.stop, data.insertIndex);
+      onInsertStop(data.stop, data.insertIndex, data.webGrounding);
       setSmartStopPrompt('');
       onClose();
     } catch (err) {
@@ -143,7 +143,7 @@ export default function OnTheFlyEditorModal({
       if (!resp.ok || !data?.updatedDay) {
         throw new Error(data?.error || 'Could not apply modification.');
       }
-      onReplaceDay(data.updatedDay, data.changeSummary);
+      onReplaceDay(data.updatedDay, data.changeSummary, data.webGrounding);
       setAiInstruction('');
       onClose();
     } catch (err) {
@@ -271,7 +271,7 @@ export default function OnTheFlyEditorModal({
                     />
                   </label>
                   <p style={{ fontSize: '0.78rem', color: 'var(--ink-secondary)', margin: '0 0 12px' }}>
-                    Gemini 4 Hydrogen automatically builds museum room highlights + audio scripts, internet-featured restaurant dishes, TripAdvisor links, map pins, and caches them offline.
+                    Gemini 4 Hydrogen runs live Google Searches first (current hours, exhibitions, TripAdvisor/Michelin links & viral dishes), then builds room highlights, audio scripts, and caches everything offline.
                   </p>
                   <button
                     type="submit"
@@ -280,11 +280,11 @@ export default function OnTheFlyEditorModal({
                   >
                     {loading ? (
                       <>
-                        <Loader2 size={16} className="spin" /> Enriching Stop with Hydrogen...
+                        <Loader2 size={16} className="spin" /> Searching Live Web & Enriching with Hydrogen...
                       </>
                     ) : (
                       <>
-                        <Sparkles size={16} /> Enrich & Insert Stop
+                        <Sparkles size={16} /> Search Web & Insert Stop
                       </>
                     )}
                   </button>
@@ -317,11 +317,11 @@ export default function OnTheFlyEditorModal({
               >
                 {loading ? (
                   <>
-                    <Loader2 size={16} className="spin" /> Updating Schedule with Hydrogen...
+                    <Loader2 size={16} className="spin" /> Searching Live Web & Updating Schedule...
                   </>
                 ) : (
                   <>
-                    <Sparkles size={16} /> Apply Changes to {day.dateLabel}
+                    <Sparkles size={16} /> Search Web & Apply Changes to {day.dateLabel}
                   </>
                 )}
               </button>

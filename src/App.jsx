@@ -528,7 +528,7 @@ function MeridianShell() {
   }, [currentDay, usingAltTrack]);
 
   // On-the-fly Stop Operations (Add, Update, Remove, Reorder, Replace Day, Add Day)
-  const handleInsertStop = (newStop, insertIndex = null) => {
+  const handleInsertStop = (newStop, insertIndex = null, webGrounding = null) => {
     if (!currentDay) return;
     commitActiveItineraryChange((itin) => {
       const dayObj = itin.days.find((d) => d.id === currentDay.id);
@@ -547,7 +547,10 @@ function MeridianShell() {
       }
       return itin;
     });
-    showToast(`Added "${newStop.title}" to ${currentDay.dateLabel}`);
+    const groundedSuffix = webGrounding?.sourceCount
+      ? ` (grounded on ${webGrounding.sourceCount} web sources)`
+      : '';
+    showToast(`Added "${newStop.title}"${groundedSuffix}`);
   };
 
   const handleUpdateStop = (editedStop) => {
@@ -603,14 +606,17 @@ function MeridianShell() {
     });
   };
 
-  const handleReplaceDayFromAi = (updatedDay, changeSummary) => {
+  const handleReplaceDayFromAi = (updatedDay, changeSummary, webGrounding = null) => {
     commitActiveItineraryChange((itin) => {
       itin.days = itin.days.map((d) =>
         d.id === updatedDay.id ? updatedDay : d
       );
       return itin;
     });
-    showToast(changeSummary || `Updated ${updatedDay.dateLabel}`);
+    const suffix = webGrounding?.sourceCount
+      ? ` · ${webGrounding.sourceCount} live sources`
+      : '';
+    showToast(`${changeSummary || `Updated ${updatedDay.dateLabel}`}${suffix}`);
   };
 
   const handleAddNewDay = () => {

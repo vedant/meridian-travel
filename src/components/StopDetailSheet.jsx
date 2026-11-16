@@ -16,6 +16,7 @@ import {
   Award,
   Pencil,
   Trash2,
+  Globe2,
 } from 'lucide-react';
 import { useAudioPlayer } from './AudioPlayerContext';
 
@@ -309,6 +310,36 @@ export default function StopDetailSheet({
                   <li key={i}>{tip}</li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {/* Live Web Search Grounding Sources (for stops added/updated via Hydrogen) */}
+          {stop.webGrounding?.sources?.length > 0 && (
+            <div className="insider-tips-card" style={{ background: '#f0fdf4', borderColor: '#bbf7d0' }}>
+              <h4 style={{ color: '#14532d' }}>
+                <Globe2 size={15} /> Grounded via Live Web Search ({stop.webGrounding.sources.length} verified sources)
+              </h4>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {stop.webGrounding.sources.map((src, i) => (
+                  <a
+                    key={i}
+                    href={src.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      color: '#166534',
+                      background: '#dcfce7',
+                      padding: '4px 9px',
+                      borderRadius: 999,
+                      textDecoration: 'none',
+                    }}
+                  >
+                    {src.title} ↗
+                  </a>
+                ))}
+              </div>
             </div>
           )}
 

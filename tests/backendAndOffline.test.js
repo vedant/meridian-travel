@@ -1,7 +1,28 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { encryptJson, decryptJson } from '../api/_lib/session.js';
+import { buildStandardStopLinks } from '../api/_lib/hydrogen.js';
 import authDriveHandler from '../api/auth-drive.js';
+
+test('buildStandardStopLinks promotes verified TripAdvisor, Michelin & Official URLs from Google Search grounding sources', () => {
+  const links = buildStandardStopLinks({
+    name: 'Gymkhana',
+    city: 'London',
+    lat: 51.5094,
+    lng: -0.1419,
+    groundedSources: [
+      { title: 'gymkhanarestaurants.com', url: 'https://gymkhanarestaurants.com/london/' },
+      { title: 'michelin.com', url: 'https://guide.michelin.com/us/en/greater-london/london/restaurant/gymkhana' },
+      { title: 'tripadvisor.com', url: 'https://www.tripadvisor.com/Restaurant_Review-g186338-d5001122-Reviews-Gymkhana-London_England.html' },
+    ],
+  });
+  const ta = links.find((l) => l.platform === 'tripadvisor');
+  const mich = links.find((l) => l.platform === 'michelin');
+  const off = links.find((l) => l.platform === 'official');
+  assert.equal(ta.url, 'https://www.tripadvisor.com/Restaurant_Review-g186338-d5001122-Reviews-Gymkhana-London_England.html');
+  assert.equal(mich.url, 'https://guide.michelin.com/us/en/greater-london/london/restaurant/gymkhana');
+  assert.equal(off.url, 'https://gymkhanarestaurants.com/london/');
+});
 
 test('AES-256-GCM session encryption round-trips OAuth payload and rejects tampering', () => {
   const payload = {
