@@ -14,6 +14,8 @@ import {
   Navigation,
   Star,
   Award,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 import { useAudioPlayer } from './AudioPlayerContext';
 
@@ -41,6 +43,8 @@ export default function StopDetailSheet({
   onToggleCompleted,
   noteText = '',
   onSaveNote,
+  onEditStop = null,
+  onDeleteStop = null,
 }) {
   const { startMuseumTour, openMuseumGuideOnly } = useAudioPlayer();
   const [draftNote, setDraftNote] = useState(noteText);
@@ -331,7 +335,7 @@ export default function StopDetailSheet({
 
           {/* Personal Trip Note */}
           <div className="personal-note-section">
-            <h4>Personal Notes (Saved on Your iPhone)</h4>
+            <h4>Personal Notes (Saved Offline & Synced to Drive)</h4>
             <textarea
               rows={2}
               placeholder="Add confirmation number, table preference, or gift idea for Nutan..."
@@ -342,6 +346,47 @@ export default function StopDetailSheet({
               }}
             />
           </div>
+
+          {/* Modify or Remove Stop On-the-Fly */}
+          {(onEditStop || onDeleteStop) && (
+            <div
+              style={{
+                display: 'flex',
+                gap: 10,
+                marginTop: 14,
+                paddingTop: 14,
+                borderTop: '1px solid var(--border-light)',
+              }}
+            >
+              {onEditStop && (
+                <button
+                  type="button"
+                  className="visited-toggle-btn"
+                  onClick={() => {
+                    const target = stop;
+                    onClose();
+                    onEditStop(target);
+                  }}
+                >
+                  <Pencil size={15} /> Edit Stop Details
+                </button>
+              )}
+              {onDeleteStop && (
+                <button
+                  type="button"
+                  className="visited-toggle-btn"
+                  style={{ color: '#991b1b', borderColor: '#fecaca' }}
+                  onClick={() => {
+                    const targetId = stop.id;
+                    onClose();
+                    onDeleteStop(targetId);
+                  }}
+                >
+                  <Trash2 size={15} /> Remove Stop
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

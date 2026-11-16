@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
+import { getOfflineCachedAudioBlobUrl } from '../services/offlineVault.js';
 
 const AudioPlayerContext = createContext(null);
 
@@ -144,7 +145,13 @@ export function AudioPlayerProvider({ children }) {
       if (audio && target.audioUrl) {
         setUsingSpeechFallback(false);
         audio.pause();
-        audio.src = target.audioUrl;
+        // When offline or cached in Offline Vault, resolve Blob URL directly so iOS Safari <audio> never stalls!
+        let resolvedSrc = target.audioUrl;
+        if (!navigator.onLine || target.audioUrl.startsWith('/offline-tts/')) {
+          const cachedBlobUrl = await getOfflineCachedAudioBlobUrl(target.audioUrl);
+          if (cachedBlobUrl) resolvedSrc = cachedBlobUrl;
+        }
+        audio.src = resolvedSrc;
         audio.playbackRate = playbackRate;
         setCurrentTime(0);
         setDuration(0);
@@ -152,7 +159,18 @@ export function AudioPlayerProvider({ children }) {
           await audio.play();
           setIsPlaying(true);
         } catch {
-          // Fallback to Web Speech if MP3 missing (e.g., custom AI-generated itinerary)
+          // Try Blob URL fallback even when online if direct URL failed
+          const fallbackBlob = await getOfflineCachedAudioBlobUrl(target.audioUrl);
+          if (fallbackBlob && fallbackBlob !== resolvedSrc) {
+            audio.src = fallbackBlob;
+            try {
+              await audio.play();
+              setIsPlaying(true);
+              return;
+            } catch {
+              // Fall through to Web Speech
+            }
+          }
           speakWithWebSpeech(target, playbackRate);
         }
       } else {

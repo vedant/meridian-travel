@@ -9,7 +9,7 @@
     <title>Meridian · Curated City & Cultural Companion</title>
     <meta
       name="description"
-      content="Installable iOS travel & cultural companion with room-by-room museum audiobook tours, internet-featured restaurant dish guides, interactive maps, and TripAdvisor links."
+      content="Installable offline-capable iOS travel & cultural companion with room-by-room museum audiobook tours, internet-featured restaurant dish guides, on-the-fly editing, and Google Drive sync."
     />
 
     <!-- iOS Home Screen / Standalone PWA Configuration -->
@@ -24,19 +24,12 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />
 
-    <!-- Editorial Typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Non-blocking Editorial Typography (never blocks offline cold boot!) -->
     <link
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
-    />
-
-    <!-- Leaflet CSS -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      crossorigin=""
+      media="print"
+      onload="this.media='all'"
     />
   </head>
   <body>

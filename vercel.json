@@ -24,6 +24,13 @@
     }
   ],
   "rewrites": [
+    { "source": "/api/image-proxy", "destination": "/api/media?action=image" },
+    { "source": "/api/tts", "destination": "/api/media?action=tts" },
+    { "source": "/api/auth/session", "destination": "/api/auth-drive?route=session" },
+    { "source": "/api/auth/google", "destination": "/api/auth-drive?route=google" },
+    { "source": "/api/auth/callback", "destination": "/api/auth-drive?route=callback" },
+    { "source": "/api/auth/logout", "destination": "/api/auth-drive?route=logout" },
+    { "source": "/api/drive/sync", "destination": "/api/auth-drive?route=drive-sync" },
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/((?!api/|audio/|images/|icons/|manifest\\.webmanifest|sw\\.js|favicon\\.svg|apple-touch-icon\\.png).*)", "destination": "/index.html" }
   ]

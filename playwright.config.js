@@ -5,7 +5,7 @@ export default defineConfig({
   testMatch: '**/*.spec.js',
   timeout: 45000,
   use: {
-    baseURL: 'http://127.0.0.1:5192',
+    baseURL: 'http://127.0.0.1:5194',
     headless: true,
     launchOptions: {
       executablePath: '/usr/bin/chromium',
@@ -25,9 +25,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npx vite preview --host 127.0.0.1 --port 5192',
-    port: 5192,
-    reuseExistingServer: true,
+    command: 'npx vite preview --host 127.0.0.1 --port 5194',
+    port: 5194,
+    reuseExistingServer: false,
     timeout: 30000,
   },
 });

@@ -1,80 +1,31 @@
-const GEMINI_MODELS = [
-  'gemini-2.5-flash',
-  'gemini-2.0-flash',
-  'gemini-2.5-flash-lite',
-];
-
-async function fetchWikiImage(searchQuery) {
-  if (!searchQuery) return '/images/london_hero.jpg';
-  try {
-    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(
-      searchQuery
-    )}&gsrlimit=1&prop=pageimages&piprop=thumbnail&pithumbsize=900&format=json&origin=*`;
-    const resp = await fetch(url, {
-      headers: { 'User-Agent': 'MeridianTravelCompanion/1.0' },
-    });
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    const pages = data?.query?.pages;
-    if (!pages) return null;
-    const first = Object.values(pages)[0];
-    return first?.thumbnail?.source || null;
-  } catch {
-    return null;
-  }
-}
-
-function buildLinks({ name, city, lat, lng }) {
-  const q = encodeURIComponent(`${name} ${city || ''}`.trim());
-  return [
-    {
-      label: 'TripAdvisor',
-      platform: 'tripadvisor',
-      url: `https://www.tripadvisor.com/Search?q=${q}`,
-    },
-    {
-      label: 'Google Reviews & Map',
-      platform: 'google',
-      url: `https://www.google.com/maps/search/?api=1&query=${q}`,
-    },
-    {
-      label: 'Apple Maps (iOS)',
-      platform: 'apple',
-      url:
-        lat && lng
-          ? `https://maps.apple.com/?q=${q}&ll=${lat},${lng}&dirflg=w`
-          : `https://maps.apple.com/?q=${q}`,
-    },
-  ];
-}
+import {
+  callHydrogenJson,
+  fetchWikiImage,
+  buildStandardStopLinks,
+} from './_lib/hydrogen.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({
-      error: 'GEMINI_API_KEY is not configured on the server.',
-    });
-  }
-
   try {
     const { destinationPrompt = '', pastedText = '' } = req.body || {};
     const combinedInput = `${destinationPrompt}\n\n${pastedText}`.trim();
-    if (!combinedInput || combinedInput.length < 4) {
-      return res.status(400).json({ error: 'Please enter a destination or paste itinerary notes.' });
+    if (!combinedInput || combinedInput.length < 3) {
+      return res
+        .status(400)
+        .json({ error: 'Please enter a destination or paste itinerary notes.' });
     }
 
-    const systemInstruction = `You are Meridian, an elite cultural historian, museum docent, and culinary concierge.
+    const systemInstruction = `You are Meridian, an elite cultural historian, museum docent, and culinary concierge running on Gemini 4 Hydrogen.
 Convert the user's destination request or pasted itinerary notes into a rich, structured JSON travel companion object.
 Requirements:
 1. Preserve all specific dates, venues, hotels, and preferences if the user pasted an itinerary; otherwise design an extraordinary 2-to-4 day cultural & culinary itinerary for the requested city.
-2. For EVERY museum, gallery, temple, palace, or major monument stop, include a "museumTour" object with 3-4 specific room/area highlights, exact floor/gallery locations, what to look closely at, and an engaging 75-100 word spoken "audioScript" for each highlight so the app can play it as an audiobook tour.
+2. For EVERY museum, gallery, temple, palace, or major monument stop, include a "museumTour" object with 3-4 specific room/area highlights, exact floor/gallery locations, what to look closely at, and an engaging 80-110 word spoken "audioScript" for each highlight so the app can play & offline-cache it as an audiobook tour.
 3. For EVERY restaurant, food market, café, or dining stop, include a "diningGuide" object with 3-4 specific dishes highlighted/famous on the internet (TripAdvisor, Michelin, food blogs, social media) explaining why diners rave about them.
 4. Provide accurate latitude and longitude coordinates ("lat", "lng") for the baseHotel and every stop.
-5. Return ONLY valid JSON matching this structure:
+5. Return ONLY valid JSON matching this exact structure:
 {
   "id": "slug-id",
   "city": "City Name",
@@ -133,7 +84,7 @@ Requirements:
             "tourId": "unique-tour-slug",
             "tourTitle": "Curated Highlights Audio Tour",
             "narrator": "Meridian Cultural Audio Guide",
-            "voiceId": "en-GB-RyanNeural",
+            "voiceId": "Charon",
             "totalDurationMinutes": 45,
             "routeStrategy": "How to move through the rooms",
             "introTranscript": "70-90 word spoken welcome to the venue",
@@ -172,61 +123,29 @@ Requirements:
   ]
 }`;
 
-    let rawJsonText = null;
-    let lastErr = null;
+    const { data: itinerary, modelUsed } = await callHydrogenJson({
+      systemInstruction,
+      userPrompt: `Build a complete Meridian itinerary JSON for:\n${combinedInput}`,
+      temperature: 0.45,
+    });
 
-    for (const model of GEMINI_MODELS) {
-      try {
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemInstruction }] },
-            contents: [
-              {
-                role: 'user',
-                parts: [{ text: `Build a complete Meridian itinerary JSON for:\n${combinedInput}` }],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.5,
-              responseMimeType: 'application/json',
-            },
-          }),
-        });
-
-        if (!response.ok) {
-          lastErr = `Model ${model} HTTP ${response.status}`;
-          continue;
-        }
-        const payload = await response.json();
-        const candidateText = payload?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (candidateText) {
-          rawJsonText = candidateText;
-          break;
-        }
-      } catch (err) {
-        lastErr = err.message;
-      }
-    }
-
-    if (!rawJsonText) {
-      return res.status(502).json({ error: `AI generation failed: ${lastErr || 'No response'}` });
-    }
-
-    const itinerary = JSON.parse(rawJsonText);
-    itinerary.id = `${(itinerary.id || itinerary.city || 'custom').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36)}`;
+    itinerary.id = `${(itinerary.id || itinerary.city || 'custom')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36)}`;
     itinerary.isCustom = true;
+    itinerary.generatedBy = modelUsed;
+    itinerary.updatedAt = new Date().toISOString();
 
-    // Resolve real Wikipedia photos in parallel
     const heroImg = await fetchWikiImage(itinerary.wikiImageQuery || itinerary.city);
     itinerary.heroImage = heroImg || '/images/london_hero.jpg';
 
     if (itinerary.baseHotel) {
-      const hotelImg = await fetchWikiImage(itinerary.baseHotel.wikiImageQuery || `${itinerary.baseHotel.name} ${itinerary.city}`);
+      const hotelImg = await fetchWikiImage(
+        itinerary.baseHotel.wikiImageQuery ||
+          `${itinerary.baseHotel.name} ${itinerary.city}`
+      );
       itinerary.baseHotel.image = hotelImg || itinerary.heroImage;
-      itinerary.baseHotel.links = buildLinks({
+      itinerary.baseHotel.links = buildStandardStopLinks({
         name: itinerary.baseHotel.name,
         city: itinerary.city,
         lat: itinerary.baseHotel.coordinates?.lat,
@@ -236,25 +155,34 @@ Requirements:
 
     for (const day of itinerary.days || []) {
       for (const stop of day.stops || []) {
-        const stopImg = await fetchWikiImage(stop.wikiImageQuery || `${stop.title} ${itinerary.city}`);
+        const stopImg = await fetchWikiImage(
+          stop.wikiImageQuery || `${stop.title} ${itinerary.city}`
+        );
         stop.image = stopImg || itinerary.heroImage;
-        stop.links = buildLinks({
+        stop.links = buildStandardStopLinks({
           name: stop.title,
           city: itinerary.city,
           lat: stop.coordinates?.lat,
           lng: stop.coordinates?.lng,
         });
         if (stop.museumTour && Array.isArray(stop.museumTour.highlights)) {
+          const tourId =
+            stop.museumTour.tourId || `tour-${stop.id}-${Date.now().toString(36)}`;
+          stop.museumTour.tourId = tourId;
           for (const hl of stop.museumTour.highlights) {
-            const hlImg = await fetchWikiImage(hl.wikiImageQuery || `${hl.title} ${stop.title}`);
+            const hlImg = await fetchWikiImage(
+              hl.wikiImageQuery || `${hl.title} ${stop.title}`
+            );
             hl.image = hlImg || stop.image;
           }
         }
       }
     }
 
-    return res.status(200).json({ itinerary });
+    return res.status(200).json({ itinerary, modelUsed });
   } catch (error) {
-    return res.status(500).json({ error: error.message || 'Failed to generate itinerary' });
+    return res
+      .status(500)
+      .json({ error: error.message || 'Failed to generate itinerary' });
   }
 }
